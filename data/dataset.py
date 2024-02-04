@@ -15,6 +15,8 @@ from torchvision import tv_tensors
 import torchvision.transforms.v2 as transforms
 import random
 
+from torchvision.datasets import VOCDetection
+
 
 
 class CharlotteDataset():
@@ -76,7 +78,6 @@ class CharlotteDataset():
         return voc_dict
 
 
-from torchvision.datasets import VOCDetection
 
 class VOCDataset(VOCDetection):
     classes = ["__background__","person","bird", "cat", "cow", "dog", "horse", "sheep",\
@@ -104,12 +105,6 @@ class VOCDataset(VOCDetection):
     
 
  
-
-
-
-
-
-
 class Dataset(data.Dataset):
     def __init__(self, dataset, transform = None, fraction = 1) -> None:
         super().__init__()

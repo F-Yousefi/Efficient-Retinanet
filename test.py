@@ -35,4 +35,3 @@ while True:
     print(detections[0]["labels"])
     plt.imshow(res_img.permute(1, 2, 0))
     plt.show()
-
