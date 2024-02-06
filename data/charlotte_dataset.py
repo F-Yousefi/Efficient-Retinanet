@@ -103,19 +103,26 @@ def transform(image, target):
         return image, target
 
 
+from typing import Any
 
-
-def generate_charlotte_dataloader(batch_size = 2 ,
-                                  train_frac =0.02,
-                                  val_frac = 0.02, 
-                                  test_frac = 0.96,
-                                  num_workers = 2):
+def generate_charlotte_dataloader(train_frac =0.02,
+                                  val_frac = 0.02,  
+                                  *args: Any, **kwargs: Any):
     charlotte_dataset = CharlotteDataset()
-    train_split, val_split , test_split = random_split(charlotte_dataset, (train_frac,val_frac, test_frac))
+    train_split, val_split = random_split(charlotte_dataset, (train_frac,val_frac))
     train_split = Dataset(train_split, transform=transform)
     val_split = Dataset(val_split)
-    test_split = Dataset(test_split)
-    train_dataloader = DataLoader(train_split,batch_size, True,collate_fn=train_split.collate_fn, num_workers=num_workers,persistent_workers=True)
-    val_dataloader = DataLoader(val_split,batch_size, False,collate_fn=val_split.collate_fn, num_workers=num_workers,persistent_workers=True)
-    test_dataloader = DataLoader(test_split,batch_size, False,collate_fn=test_split.collate_fn, num_workers=num_workers,persistent_workers=True)
-    return train_dataloader, val_dataloader, test_dataloader
+    train_dataloader = DataLoader(dataset=train_split, shuffle=True,collate_fn=train_split.collate_fn, *args, **kwargs)
+    val_dataloader = DataLoader(dataset=val_split, shuffle=False,collate_fn=val_split.collate_fn, *args, **kwargs)
+    return train_dataloader, val_dataloader
+
+def to_cuda(batch):
+    images = []
+    targets = []
+    for (image, target) in batch:
+        image = image.to(config.device)
+        target["boxes"] = target["boxes"].to(config.device)
+        target["labels"] = target["labels"].to(config.device)
+        images.append(image)
+        targets.append(target)
+    return images, targets
