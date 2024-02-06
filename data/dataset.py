@@ -9,13 +9,13 @@ class Dataset(data.Dataset):
     def __init__(self, dataset, transform = None, fraction = 1) -> None:
         super().__init__()
         self.dataset = dataset
-        self.device = config.device
+        self.device = "cpu"
         self.fraction = fraction
         self.transform = transform
 
     def __getitem__(self, index) -> Any:
         image, bboxes, labels, difficult = self.dataset[index]
-        image = torchvision.transforms.ToTensor()(image).to(config.device)#<-------------
+        image = torchvision.transforms.ToTensor()(image).to(self.device)
         target = {}
         boxes = torch.tensor(data=bboxes,dtype=torch.float32).to(self.device)
         target["boxes"] = boxes if len(boxes.shape) > 1 else boxes.unsqueeze(dim=0)
@@ -26,4 +26,4 @@ class Dataset(data.Dataset):
         return len(self.dataset) // self.fraction
     
     def collate_fn(self, data):
-        return zip(*data)
+        return data

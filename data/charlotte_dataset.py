@@ -115,7 +115,7 @@ def generate_charlotte_dataloader(batch_size = 2 ,
     train_split = Dataset(train_split, transform=transform)
     val_split = Dataset(val_split)
     test_split = Dataset(test_split)
-    train_dataloader = DataLoader(train_split,batch_size, True,collate_fn=train_split.collate_fn, num_workers=num_workers)
-    val_dataloader = DataLoader(val_split,batch_size, False,collate_fn=val_split.collate_fn, num_workers=num_workers)
-    test_dataloader = DataLoader(test_split,batch_size, False,collate_fn=test_split.collate_fn, num_workers=num_workers)
+    train_dataloader = DataLoader(train_split,batch_size, True,collate_fn=train_split.collate_fn, num_workers=num_workers,persistent_workers=True)
+    val_dataloader = DataLoader(val_split,batch_size, False,collate_fn=val_split.collate_fn, num_workers=num_workers,persistent_workers=True)
+    test_dataloader = DataLoader(test_split,batch_size, False,collate_fn=test_split.collate_fn, num_workers=num_workers,persistent_workers=True)
     return train_dataloader, val_dataloader, test_dataloader
