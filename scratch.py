@@ -12,6 +12,7 @@ import torch
 from typing import Any, List, Optional
 from utils.config import config
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
+from torchvision.models.detection.retinanet import retinanet_resnet50_fpn, ResNet50_Weights
 
 class CharlotteDetector(L.LightningModule):
     def __init__(self,batch, *args: Any, **kwargs: Any) -> None:
@@ -20,10 +21,18 @@ class CharlotteDetector(L.LightningModule):
         num_classes = 7
         model_name = "efficientnet-b4"
         trainable_backbone_layers = 0
-        self.model = get_efficient_retinanet(num_classes=num_classes, 
-                                            efficientnet_model_name=model_name, 
-                                            trainable_backbone_layers=trainable_backbone_layers,
-                                            score_thresh=0.4).to("cuda")
+        # self.model = get_efficient_retinanet(num_classes=num_classes, 
+        #                                     efficientnet_model_name=model_name, 
+        #                                     trainable_backbone_layers=trainable_backbone_layers,
+        #                                     score_thresh=0.4).to("cuda")
+        self.model = retinanet_resnet50_fpn(    
+                    weights= None,
+                    progress=True,
+                    num_classes = num_classes,
+                    weights_backbone = ResNet50_Weights.IMAGENET1K_V1,
+                    trainable_backbone_layers = trainable_backbone_layers,
+                    score_thresh=0.4).to(config.device)
+        
         self.mean_average_precision  = MeanAveragePrecision()
 
     def training_step(self, batch) -> STEP_OUTPUT:
@@ -57,7 +66,7 @@ class CharlotteDetector(L.LightningModule):
     def on_validation_epoch_end(self) -> None:
         myTable = PrettyTable(["index", "value"]) 
         mAP = self.mean_average_precision.compute()
-        _ = [myTable.add_row([key, f"{values.item():.4f}"]) for key, values in mAP.items() if values.nelement() == 1 ] 
+        _ = [myTable.add_row([key, f"{values.item()* 100:.1f}%"]) for key, values in mAP.items() if values.nelement() == 1 ] 
         print(myTable)
         self.mean_average_precision.reset()
     
@@ -95,15 +104,15 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 checkpoint_callback = ModelCheckpoint(monitor='validation_mAP', filename="ER_best_mAP.ckpt", mode="max",dirpath="./")
 
 model = CharlotteDetector(batch=batch_size)
-trainer = L.Trainer(max_epochs = 20 , enable_model_summary=True, enable_progress_bar=True, callbacks=[checkpoint_callback] )
+trainer = L.Trainer(max_epochs = 40 , enable_model_summary=True, enable_progress_bar=True, callbacks=[checkpoint_callback] )
 trainer.fit(model=model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader) 
 
 
-model =CharlotteDetector.load_from_checkpoint("ER_best_mAP.ckpt", batch=batch_size)
+# model =CharlotteDetector.load_from_checkpoint("ER_best_mAP.ckpt", batch=batch_size)
 
-print(model.learning_rate)
-# prints the learning_rate you used in this checkpoint
+# print(model.learning_rate)
+# # prints the learning_rate you used in this checkpoint
 
-model = CharlotteDetector(batch=batch_size)
-trainer = L.Trainer(max_epochs = 20 , enable_model_summary=True, enable_progress_bar=True, callbacks=[checkpoint_callback] )
-trainer.validate(model, ckpt_path="ER_best_mAP.ckpt", dataloaders=val_dataloader)
+# model = CharlotteDetector(batch=batch_size)
+# trainer = L.Trainer(max_epochs = 20 , enable_model_summary=True, enable_progress_bar=True )
+# trainer.validate(model, ckpt_path="ER_best_mAP.ckpt", dataloaders=val_dataloader)
