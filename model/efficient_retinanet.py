@@ -1,32 +1,36 @@
-from torchvision.models.efficientnet import *                
-from torchvision.models.detection.retinanet import *
-from torchvision.models.detection.retinanet import RetinaNetHead
-from torchvision.models.detection.backbone_utils import BackboneWithFPN, ExtraFPNBlock, IntermediateLayerGetter
-from torch import nn, rand
+"The main body of the model can be found here. Efficient Retinanet (ER)"
 import torch
-from typing import Optional, Any, List, Callable
-
 import warnings
-from collections import OrderedDict
-from typing import Any, Callable, Dict, List, Optional, Tuple
-
-import torch
 from torch import nn, Tensor
-
-from torchvision.ops import boxes as box_ops, misc as misc_nn_ops
-from torchvision.ops.feature_pyramid_network import LastLevelP6P7
+from collections import OrderedDict
+from torchvision.models.efficientnet import *
+from typing import Optional, Any, List, Callable
 from torchvision.utils import _log_api_usage_once
-from torchvision.models._meta import _COCO_CATEGORIES
+from torchvision.models.detection.retinanet import *
 from torchvision.models.detection import _utils as det_utils
+from typing import Any, Callable, Dict, List, Optional, Tuple
+from torchvision.models.detection.retinanet import RetinaNetHead
+from torchvision.ops.feature_pyramid_network import LastLevelP6P7
+from torchvision.ops import boxes as box_ops, misc as misc_nn_ops
 from torchvision.models.detection.anchor_utils import AnchorGenerator
-from torchvision.models.detection.backbone_utils import _validate_trainable_layers
 from torchvision.models.detection.transform import GeneralizedRCNNTransform
+from torchvision.models.detection.backbone_utils import _validate_trainable_layers
+from torchvision.models.detection.backbone_utils import (
+    BackboneWithFPN,
+    ExtraFPNBlock,
+    IntermediateLayerGetter,
+)
+
 
 def _default_anchorgen():
-    anchor_sizes = tuple((x, int(x * 2 ** (1.0 / 3)), int(x * 2 ** (2.0 / 3))) for x in [64, 128, 128, 256, 256, 256, 512, 512])
+    anchor_sizes = tuple(
+        (x, int(x * 2 ** (1.0 / 3)), int(x * 2 ** (2.0 / 3)))
+        for x in [64, 128, 128, 256, 256, 256, 512, 512]
+    )
     aspect_ratios = ((0.5, 1.0, 2.0),) * len(anchor_sizes)
     anchor_generator = AnchorGenerator(anchor_sizes, aspect_ratios)
     return anchor_generator
+
 
 class RetinaNet(nn.Module):
     """
@@ -160,7 +164,11 @@ class RetinaNet(nn.Module):
         self.anchor_generator = anchor_generator
 
         if head is None:
-            head = RetinaNetHead(backbone.out_channels, anchor_generator.num_anchors_per_location()[0], num_classes)
+            head = RetinaNetHead(
+                backbone.out_channels,
+                anchor_generator.num_anchors_per_location()[0],
+                num_classes,
+            )
         self.head = head
 
         if proposal_matcher is None:
@@ -177,7 +185,9 @@ class RetinaNet(nn.Module):
             image_mean = [0.485, 0.456, 0.406]
         if image_std is None:
             image_std = [0.229, 0.224, 0.225]
-        self.transform = GeneralizedRCNNTransform(min_size, max_size, image_mean, image_std, **kwargs)
+        self.transform = GeneralizedRCNNTransform(
+            min_size, max_size, image_mean, image_std, **kwargs
+        )
 
         self.score_thresh = score_thresh
         self.nms_thresh = nms_thresh
@@ -201,11 +211,18 @@ class RetinaNet(nn.Module):
         for anchors_per_image, targets_per_image in zip(anchors, targets):
             if targets_per_image["boxes"].numel() == 0:
                 matched_idxs.append(
-                    torch.full((anchors_per_image.size(0),), -1, dtype=torch.int64, device=anchors_per_image.device)
+                    torch.full(
+                        (anchors_per_image.size(0),),
+                        -1,
+                        dtype=torch.int64,
+                        device=anchors_per_image.device,
+                    )
                 )
                 continue
 
-            match_quality_matrix = box_ops.box_iou(targets_per_image["boxes"], anchors_per_image)
+            match_quality_matrix = box_ops.box_iou(
+                targets_per_image["boxes"], anchors_per_image
+            )
             matched_idxs.append(self.proposal_matcher(match_quality_matrix))
 
         return self.head.compute_loss(targets, head_outputs, anchors, matched_idxs)
@@ -248,9 +265,12 @@ class RetinaNet(nn.Module):
                 labels_per_level = topk_idxs % num_classes
 
                 boxes_per_level = self.box_coder.decode_single(
-                    box_regression_per_level[anchor_idxs], anchors_per_level[anchor_idxs]
+                    box_regression_per_level[anchor_idxs],
+                    anchors_per_level[anchor_idxs],
                 )
-                boxes_per_level = box_ops.clip_boxes_to_image(boxes_per_level, image_shape)
+                boxes_per_level = box_ops.clip_boxes_to_image(
+                    boxes_per_level, image_shape
+                )
 
                 image_boxes.append(boxes_per_level)
                 image_scores.append(scores_per_level)
@@ -261,7 +281,9 @@ class RetinaNet(nn.Module):
             image_labels = torch.cat(image_labels, dim=0)
 
             # non-maximum suppression
-            keep = box_ops.batched_nms(image_boxes, image_scores, image_labels, self.nms_thresh)
+            keep = box_ops.batched_nms(
+                image_boxes, image_scores, image_labels, self.nms_thresh
+            )
             keep = keep[: self.detections_per_img]
 
             detections.append(
@@ -294,7 +316,10 @@ class RetinaNet(nn.Module):
             else:
                 for target in targets:
                     boxes = target["boxes"]
-                    torch._assert(isinstance(boxes, torch.Tensor), "Expected target boxes to be of type Tensor.")
+                    torch._assert(
+                        isinstance(boxes, torch.Tensor),
+                        "Expected target boxes to be of type Tensor.",
+                    )
                     torch._assert(
                         len(boxes.shape) == 2 and boxes.shape[-1] == 4,
                         "Expected target boxes to be a tensor of shape [N, 4].",
@@ -363,33 +388,37 @@ class RetinaNet(nn.Module):
             # split outputs per level
             split_head_outputs: Dict[str, List[Tensor]] = {}
             for k in head_outputs:
-                split_head_outputs[k] = list(head_outputs[k].split(num_anchors_per_level, dim=1))
+                split_head_outputs[k] = list(
+                    head_outputs[k].split(num_anchors_per_level, dim=1)
+                )
             split_anchors = [list(a.split(num_anchors_per_level)) for a in anchors]
 
             # compute the detections
-            detections = self.postprocess_detections(split_head_outputs, split_anchors, images.image_sizes)
-            detections = self.transform.postprocess(detections, images.image_sizes, original_image_sizes)
+            detections = self.postprocess_detections(
+                split_head_outputs, split_anchors, images.image_sizes
+            )
+            detections = self.transform.postprocess(
+                detections, images.image_sizes, original_image_sizes
+            )
 
         if torch.jit.is_scripting():
             if not self._has_warned:
-                warnings.warn("RetinaNet always returns a (Losses, Detections) tuple in scripting")
+                warnings.warn(
+                    "RetinaNet always returns a (Losses, Detections) tuple in scripting"
+                )
                 self._has_warned = True
             return losses, detections
         return self.eager_outputs(losses, detections)
 
 
-
-
-
-
-
-
-
 def _return_out_channels(model):
-    layers = IntermediateLayerGetter(model, 
-                                     {f"{k}": str(v) for v, k in enumerate(list(range(8,-1,-1)))})
-    layers_output = layers(torch.rand((1,3,50,50)))
-    return {f"{idx}": tensor.shape[1] for idx, tensor in enumerate(layers_output.values())}
+    layers = IntermediateLayerGetter(
+        model, {f"{k}": str(v) for v, k in enumerate(list(range(8, -1, -1)))}
+    )
+    layers_output = layers(torch.rand((1, 3, 50, 50)))
+    return {
+        f"{idx}": tensor.shape[1] for idx, tensor in enumerate(layers_output.values())
+    }
 
 
 def _efficientnet_fpn_extractor(
@@ -399,66 +428,85 @@ def _efficientnet_fpn_extractor(
     extra_blocks: Optional[ExtraFPNBlock] = None,
     norm_layer: Optional[Callable[..., nn.Module]] = None,
 ) -> BackboneWithFPN:
-    
+
     if trainable_layers < 0 or trainable_layers > 5:
-        raise ValueError(f"Trainable layers should be in the range [0,8], got {trainable_layers}")
-    layers_to_train = list(range(8,-1,-1))[:trainable_layers]
+        raise ValueError(
+            f"Trainable layers should be in the range [0,8], got {trainable_layers}"
+        )
+    layers_to_train = list(range(8, -1, -1))[:trainable_layers]
 
     for name, parameter in backbone.named_parameters():
         if all([not name.startswith(str(layer)) for layer in layers_to_train]):
             parameter.requires_grad_(False)
 
     if returned_layers is None:
-        returned_layers = [3,4,5,6,7,8]
+        returned_layers = [3, 4, 5, 6, 7, 8]
     if min(returned_layers) <= 0 or max(returned_layers) >= 9:
-        raise ValueError(f"Each returned layer should be in the range [1,8]. Got {returned_layers}")
+        raise ValueError(
+            f"Each returned layer should be in the range [1,8]. Got {returned_layers}"
+        )
     return_layers = {f"{k}": str(v) for v, k in enumerate(returned_layers)}
     all_channels = _return_out_channels(backbone)
     in_channels_list = [all_channels[key] for key in return_layers.keys()]
     out_channels = 256
     return BackboneWithFPN(
-        backbone, return_layers, in_channels_list, out_channels, extra_blocks=extra_blocks, norm_layer=norm_layer
+        backbone,
+        return_layers,
+        in_channels_list,
+        out_channels,
+        extra_blocks=extra_blocks,
+        norm_layer=norm_layer,
     )
 
 
-
-
-
-def get_efficient_retinanet(num_classes:Optional[int], 
-                            efficientnet_model_name: Optional[str] = "efficientnet-b4", 
-                            trainable_backbone_layers: Optional[int] = 0,
-                            **kwargs: Any,
-                            ):
-    efficientnet_versions = \
-        {'efficientnet-b0':(efficientnet_b0,EfficientNet_B0_Weights.IMAGENET1K_V1),
-        'efficientnet-b1':(efficientnet_b1,EfficientNet_B1_Weights.IMAGENET1K_V1),
-        'efficientnet-b2':(efficientnet_b2,EfficientNet_B2_Weights.IMAGENET1K_V1),
-        'efficientnet-b3':(efficientnet_b3,EfficientNet_B3_Weights.IMAGENET1K_V1),
-        'efficientnet-b4':(efficientnet_b4,EfficientNet_B4_Weights.IMAGENET1K_V1),
-        'efficientnet-b5':(efficientnet_b5,EfficientNet_B5_Weights.IMAGENET1K_V1),
-        'efficientnet-b6':(efficientnet_b6,EfficientNet_B6_Weights.IMAGENET1K_V1),
-        'efficientnet-b7':(efficientnet_b7,EfficientNet_B7_Weights.IMAGENET1K_V1),
-        }
+def get_efficient_retinanet(
+    num_classes: Optional[int],
+    efficientnet_model_name: Optional[str] = "efficientnet-b4",
+    trainable_backbone_layers: Optional[int] = 0,
+    **kwargs: Any,
+):
+    """
+    This method give the model name of the original efficient net,
+    download its weights and load it to use in retinanet.
+    The default model name is "efficientnet-b4". This specific version
+    of Efficient net uses the same number of parameters as resnet50.
+    """
+    efficientnet_versions = {
+        "efficientnet-b0": (efficientnet_b0, EfficientNet_B0_Weights.IMAGENET1K_V1),
+        "efficientnet-b1": (efficientnet_b1, EfficientNet_B1_Weights.IMAGENET1K_V1),
+        "efficientnet-b2": (efficientnet_b2, EfficientNet_B2_Weights.IMAGENET1K_V1),
+        "efficientnet-b3": (efficientnet_b3, EfficientNet_B3_Weights.IMAGENET1K_V1),
+        "efficientnet-b4": (efficientnet_b4, EfficientNet_B4_Weights.IMAGENET1K_V1),
+        "efficientnet-b5": (efficientnet_b5, EfficientNet_B5_Weights.IMAGENET1K_V1),
+        "efficientnet-b6": (efficientnet_b6, EfficientNet_B6_Weights.IMAGENET1K_V1),
+        "efficientnet-b7": (efficientnet_b7, EfficientNet_B7_Weights.IMAGENET1K_V1),
+    }
     if efficientnet_model_name in efficientnet_versions.keys():
         efficientnet, backbone_weight = efficientnet_versions[efficientnet_model_name]
     else:
-        raise TypeError(f"\"{efficientnet_model_name}\" is not valid. \
-                        The valid model names are {list(efficientnet_versions.keys())} ")
+        raise TypeError(
+            f'"{efficientnet_model_name}" is not valid. \
+                        The valid model names are {list(efficientnet_versions.keys())} '
+        )
         weights_backbone = EfficientNet_B0_Weights.verify(weights_backbone)
 
     if num_classes is None:
         num_classes = 91
 
     is_trained = backbone_weight is not None
-    trainable_backbone_layers = _validate_trainable_layers(is_trained, trainable_backbone_layers, 8, 5)
+    trainable_backbone_layers = _validate_trainable_layers(
+        is_trained, trainable_backbone_layers, 8, 5
+    )
     norm_layer = misc_nn_ops.FrozenBatchNorm2d if is_trained else nn.BatchNorm2d
 
-    backbone = efficientnet(weights=backbone_weight, progress=True, norm_layer=norm_layer).features
+    backbone = efficientnet(
+        weights=backbone_weight, progress=True, norm_layer=norm_layer
+    ).features
     backbone = _efficientnet_fpn_extractor(
-                            backbone=backbone, 
-                            trainable_layers=trainable_backbone_layers,
-                            returned_layers=[3,4,5,6,7,8], 
-                            extra_blocks=LastLevelP6P7(256,256))
+        backbone=backbone,
+        trainable_layers=trainable_backbone_layers,
+        returned_layers=[3, 4, 5, 6, 7, 8],
+        extra_blocks=LastLevelP6P7(256, 256),
+    )
     model = RetinaNet(backbone, num_classes, **kwargs)
     return model
-    
