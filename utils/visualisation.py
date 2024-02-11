@@ -2,6 +2,8 @@ from prettytable import PrettyTable
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
+
+
 def count_parameters(model):
     table = PrettyTable(["Modules", "Parameters"])
     total_params = 0
@@ -15,12 +17,10 @@ def count_parameters(model):
     print(f"Total Trainable Params: {total_params}")
     return total_params
 
-def draw_boxes(image, boxes, color = (0,0,255)):
+
+def draw_boxes(image, boxes, color=(0, 0, 255)):
     img = np.array(image)
     for b in boxes:
-      img = cv2.rectangle(img,
-                          b[:2],
-                          b[2:], color=color, thickness=2)
+        img = cv2.rectangle(img, b[:2], b[2:], color=color, thickness=2)
     plt.imshow(img)
     plt.show()
-    

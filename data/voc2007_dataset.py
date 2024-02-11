@@ -100,7 +100,7 @@ def transform(image, target):
         return image, target
 
 
-def generate_voc_dataloader(batch_size=2, num_workers=2, fraction=1):
+def generate_voc_dataloader(batch_size=2, num_workers=2, fraction=1, **kwargs):
 
     train_voc2007 = VOCDataset("../dataset/train_voc2007", "2007", "trainval")
     train_split = Dataset(train_voc2007, transform=transform, fraction=fraction)
@@ -110,14 +110,16 @@ def generate_voc_dataloader(batch_size=2, num_workers=2, fraction=1):
         shuffle=False,
         collate_fn=train_split.collate_fn,
         num_workers=num_workers,
+        **kwargs,
     )
     val_voc2007 = VOCDataset("../dataset/test_voc2007", "2007", "test")
-    val_split = Dataset(val_voc2007, fraction=fraction)
+    val_split = Dataset(val_voc2007, fraction=fraction * 3)
     val_dataloader = DataLoader(
         dataset=val_split,
         batch_size=batch_size,
         shuffle=False,
         collate_fn=val_split.collate_fn,
         num_workers=num_workers,
+        **kwargs,
     )
     return train_dataloader, val_dataloader

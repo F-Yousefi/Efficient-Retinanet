@@ -4,6 +4,7 @@ import pytorch_lightning as L
 from utils.config import config
 from prettytable import PrettyTable
 from utils.gpu_check import gpu_temperature
+from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from model.efficient_retinanet import get_efficient_retinanet
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
@@ -11,6 +12,9 @@ from pytorch_lightning.utilities.types import (
     STEP_OUTPUT,
     OptimizerLRScheduler,
 )
+import time
+
+delay_time = 1
 
 
 class EfficientRetinanetTrainer(L.LightningModule):
@@ -27,12 +31,13 @@ class EfficientRetinanetTrainer(L.LightningModule):
         reg_loss, cls_loss = losses["bbox_regression"], losses["classification"]
         loss = reg_loss + cls_loss
         self.log_dict(
-            {"train loss": loss},
+            {"tloss": loss},
             prog_bar=True,
             on_step=True,
             on_epoch=True,
             batch_size=self.batch_size,
         )
+        time.sleep(delay_time)
         return loss
 
     def on_train_batch_end(
@@ -57,15 +62,15 @@ class EfficientRetinanetTrainer(L.LightningModule):
         ]
         mAP = self.mean_average_precision(detections, targets)
         self.log(
-            "validation_mAP",
+            "val_mAP",
             mAP["map"],
             prog_bar=True,
-            on_step=True,
             on_epoch=True,
             batch_size=self.batch_size,
         )
         gpu_temperature(config.high_temp, config.low_temp)
         del detections
+        time.sleep(delay_time)
         torch.cuda.empty_cache()
 
     def on_validation_epoch_end(self) -> None:
@@ -106,25 +111,20 @@ def get_efficient_retinanet_trainer(
     backbone,
     epochs,
     batch_size,
-    num_classes,
-    trainable_backbone_layers,
     dir_to_save_model,
     **kwargs: Any,
 ) -> (Optional[L.Trainer], Optional[L.LightningModule]):
-    backbone = get_efficient_retinanet(
-        num_classes=num_classes,
-        efficientnet_model_name=backbone,
-        trainable_backbone_layers=trainable_backbone_layers,
-        **kwargs,
-    )
+
     model = EfficientRetinanetTrainer(model=backbone, batch_size=batch_size, **kwargs)
     checkpoint_callback = ModelCheckpoint(
-        monitor="validation_mAP", filename=dir_to_save_model, mode="max", dirpath="./"
+        monitor="val_mAP", filename=dir_to_save_model, mode="max", dirpath="./"
     )
+    logger = CSVLogger("./", name="retinanet_log.csv")
     trainer = L.Trainer(
         max_epochs=epochs,
         enable_model_summary=True,
         enable_progress_bar=True,
         callbacks=[checkpoint_callback],
+        logger=logger,
     )
     return trainer, model
