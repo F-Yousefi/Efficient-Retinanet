@@ -1,20 +1,14 @@
 import torch
-from typing import Any, Optional
+from typing import Any
 import pytorch_lightning as L
 from utils.config import config
 from prettytable import PrettyTable
 from utils.gpu_check import gpu_temperature
-from pytorch_lightning.loggers import CSVLogger
-from pytorch_lightning.callbacks import ModelCheckpoint
-from model.efficient_retinanet import get_efficient_retinanet
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from pytorch_lightning.utilities.types import (
     STEP_OUTPUT,
     OptimizerLRScheduler,
 )
-import time
-
-delay_time = 1
 
 
 class EfficientRetinanetTrainer(L.LightningModule):
@@ -37,14 +31,8 @@ class EfficientRetinanetTrainer(L.LightningModule):
             on_epoch=True,
             batch_size=self.batch_size,
         )
-        time.sleep(delay_time)
+        gpu_temperature()
         return loss
-
-    def on_train_batch_end(
-        self, outputs: STEP_OUTPUT, batch: Any, batch_idx: int
-    ) -> None:
-        gpu_temperature(config.high_temp, config.low_temp)
-        return super().on_train_batch_end(outputs, batch, batch_idx)
 
     def on_train_epoch_end(self) -> None:
         print(end="\n")
@@ -68,9 +56,8 @@ class EfficientRetinanetTrainer(L.LightningModule):
             on_epoch=True,
             batch_size=self.batch_size,
         )
-        gpu_temperature(config.high_temp, config.low_temp)
         del detections
-        time.sleep(delay_time)
+        gpu_temperature()
         torch.cuda.empty_cache()
 
     def on_validation_epoch_end(self) -> None:
@@ -84,13 +71,14 @@ class EfficientRetinanetTrainer(L.LightningModule):
         print(myTable)
         self.mean_average_precision.reset()
 
-    def predict_step(self, images, *args: Any, **kwargs: Any) -> Any:
-        images = images.to("cuda")
+    def predict_step(self, batch, *args: Any, **kwargs: Any) -> Any:
+        images, targets = self.to_device(batch=batch)
         detections = [
             {key: value.detach().cpu() for key, value in image.items()}
             for image in self.model(images)
         ]
-        return detections
+        images = [image.detach().cpu() for image in images]
+        return images, detections
 
     def to_device(self, batch):
         images = []
@@ -105,26 +93,3 @@ class EfficientRetinanetTrainer(L.LightningModule):
 
     def configure_optimizers(self) -> OptimizerLRScheduler:
         return torch.optim.Adam(self.model.parameters(), lr=1e-05, weight_decay=1e-04)
-
-
-def get_efficient_retinanet_trainer(
-    backbone,
-    epochs,
-    batch_size,
-    dir_to_save_model,
-    **kwargs: Any,
-) -> (Optional[L.Trainer], Optional[L.LightningModule]):
-
-    model = EfficientRetinanetTrainer(model=backbone, batch_size=batch_size, **kwargs)
-    checkpoint_callback = ModelCheckpoint(
-        monitor="val_mAP", filename=dir_to_save_model, mode="max", dirpath="./"
-    )
-    logger = CSVLogger("./", name="retinanet_log.csv")
-    trainer = L.Trainer(
-        max_epochs=epochs,
-        enable_model_summary=True,
-        enable_progress_bar=True,
-        callbacks=[checkpoint_callback],
-        logger=logger,
-    )
-    return trainer, model

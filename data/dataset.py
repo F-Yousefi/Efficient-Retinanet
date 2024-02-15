@@ -14,11 +14,10 @@ class Dataset(data.Dataset):
         one raises many errors.
     """
 
-    def __init__(self, dataset, transform=None, fraction=1) -> None:
+    def __init__(self, dataset, transform=None) -> None:
         super().__init__()
         self.dataset = dataset
         self.device = "cpu"
-        self.fraction = fraction
         self.transform = transform
 
     def __getitem__(self, index) -> Any:
@@ -31,7 +30,7 @@ class Dataset(data.Dataset):
         return self.transform(image, target) if self.transform else (image, target)
 
     def __len__(self):
-        return len(self.dataset) // self.fraction  # <======
+        return len(self.dataset)
 
     def collate_fn(self, data):
         return data

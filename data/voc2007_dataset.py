@@ -1,11 +1,14 @@
 import torch
 import random
 import numpy as np
+from utils.config import config
 from data.dataset import Dataset
 from torchvision import tv_tensors
 from torch.utils.data import DataLoader
 from torchvision.datasets import VOCDetection
 import torchvision.transforms.v2 as transforms
+
+__all__ = ["generate_voc_dataloader"]
 
 
 class VOCDataset(VOCDetection):
@@ -100,10 +103,10 @@ def transform(image, target):
         return image, target
 
 
-def generate_voc_dataloader(batch_size=2, num_workers=2, fraction=1, **kwargs):
+def generate_voc_dataloader(batch_size=2, num_workers=2, **kwargs):
 
-    train_voc2007 = VOCDataset("../dataset/train_voc2007", "2007", "trainval")
-    train_split = Dataset(train_voc2007, transform=transform, fraction=fraction)
+    train_voc2007 = VOCDataset(config.dir_to_dataset, "2007", "trainval")
+    train_split = Dataset(train_voc2007, transform=transform)
     train_dataloader = DataLoader(
         dataset=train_split,
         batch_size=batch_size,
@@ -112,8 +115,8 @@ def generate_voc_dataloader(batch_size=2, num_workers=2, fraction=1, **kwargs):
         num_workers=num_workers,
         **kwargs,
     )
-    val_voc2007 = VOCDataset("../dataset/test_voc2007", "2007", "test")
-    val_split = Dataset(val_voc2007, fraction=fraction * 3)
+    val_voc2007 = VOCDataset(config.dir_to_dataset, "2007", "test")
+    val_split = Dataset(val_voc2007)
     val_dataloader = DataLoader(
         dataset=val_split,
         batch_size=batch_size,

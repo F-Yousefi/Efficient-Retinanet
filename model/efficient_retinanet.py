@@ -21,6 +21,8 @@ from torchvision.models.detection.backbone_utils import (
     IntermediateLayerGetter,
 )
 
+__all__ = ["get_efficient_retinanet"]
+
 
 def _default_anchorgen():
     anchor_sizes = tuple(
@@ -466,10 +468,61 @@ def get_efficient_retinanet(
     **kwargs: Any,
 ):
     """
-    This method give the model name of the original efficient net,
-    download its weights and load it to use in retinanet.
-    The default model name is "efficientnet-b4". This specific version
-    of Efficient net uses the same number of parameters as resnet50.
+    Implements Efficient-RetinaNet.
+
+    The input to the model is expected to be a list of tensors, each of shape [C, H, W], one for each
+    image, and should be in 0-1 range. Different images can have different sizes.
+
+    The behavior of the model changes depending on if it is in training or evaluation mode.
+
+    During training, the model expects both the input tensors and targets (list of dictionary),
+    containing:
+        - boxes (``FloatTensor[N, 4]``): the ground-truth boxes in ``[x1, y1, x2, y2]`` format, with
+          ``0 <= x1 < x2 <= W`` and ``0 <= y1 < y2 <= H``.
+        - labels (Int64Tensor[N]): the class label for each ground-truth box
+
+    The model returns a Dict[Tensor] during training, containing the classification and regression
+    losses.
+
+    During inference, the model requires only the input tensors, and returns the post-processed
+    predictions as a List[Dict[Tensor]], one for each input image. The fields of the Dict are as
+    follows:
+        - boxes (``FloatTensor[N, 4]``): the predicted boxes in ``[x1, y1, x2, y2]`` format, with
+          ``0 <= x1 < x2 <= W`` and ``0 <= y1 < y2 <= H``.
+        - labels (Int64Tensor[N]): the predicted labels for each image
+        - scores (Tensor[N]): the scores for each prediction
+
+    Args:
+        num_classes (int): number of output classes of the model (including the background).
+        efficientnet_model_name (string): the network used to compute the features for the model.
+            It should be selected amoung [efficientnet-b[0-7]].
+        trainable_backbone_layers(int): number of layers of the pretrained backbone model that we
+            want to trained again in the process of training.
+        min_size (int): minimum size of the image to be rescaled before feeding it to the backbone
+        max_size (int): maximum size of the image to be rescaled before feeding it to the backbone
+        image_mean (Tuple[float, float, float]): mean values used for input normalization.
+            They are generally the mean values of the dataset on which the backbone has been trained
+            on
+        score_thresh (float): Score threshold used for postprocessing the detections.
+        nms_thresh (float): NMS threshold used for postprocessing the detections.
+        detections_per_img (int): Number of best detections to keep after NMS.
+        fg_iou_thresh (float): minimum IoU between the anchor and the GT box so that they can be
+            considered as positive during training.
+        bg_iou_thresh (float): maximum IoU between the anchor and the GT box so that they can be
+            considered as negative during training.
+        topk_candidates (int): Number of best detections to keep before NMS.
+
+    Example:
+
+        >>> from data.efficient_retinanet import get_efficient_retinanet
+        >>> import torch
+        >>> model = get_efficient_retinanet(
+        >>>                   efficientnet_model_name = "efficientnet-b4",
+        >>>                   num_classes=7,
+        >>>                   trainable_backbone_layers = 0)
+        >>> model.eval()
+        >>> images = [torch.rand(3, 300, 400), torch.rand(3, 500, 400)]
+        >>> predictions = model(images)
     """
     efficientnet_versions = {
         "efficientnet-b0": (efficientnet_b0, EfficientNet_B0_Weights.IMAGENET1K_V1),
