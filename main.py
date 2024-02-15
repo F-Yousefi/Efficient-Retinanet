@@ -1,4 +1,4 @@
-"""This module is to train Efficient-Retinanet based on Pytorch_lightning."""
+"""This is the main module in the project which gets users prefernces."""
 
 from optparse import OptionParser
 from utils.config import config

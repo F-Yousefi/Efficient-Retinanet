@@ -1,3 +1,5 @@
+"""This module is specifically built for the play card dataset which has been uploaded along the project."""
+
 import torch
 import random
 import numpy as np
@@ -16,6 +18,16 @@ __all__ = ["train_dataloader", "val_dataloader"]
 
 
 class PlaycardDataset:
+    """
+    class PlayDataset:
+        This class is specifically built for the play card dataset which
+        has been uploaded along the project.
+        This class can be a good example of how you can use your desired
+        dataset.
+        Whatever dataset that you are going to use, just be careful to
+        return the same output as this class.
+    """
+
     def __init__(self, dir_to_dataset, train: bool = True) -> None:
         mode = "train" if train == True else "test"
         self.dir_to_dataset = dir_to_dataset

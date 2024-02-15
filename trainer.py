@@ -1,3 +1,5 @@
+"""This module let the main model start trainig."""
+
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 import pytorch_lightning as L
