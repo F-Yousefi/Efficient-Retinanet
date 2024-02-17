@@ -147,7 +147,7 @@ The results that I acheived based on `Play card dataset` are as follows:
 
 ## References and Resources:
 
-This project is built thanks to the valueable information that I have found through the references that i have listed below.
+This project is built thanks to the valueable information that I have found through the references that I have listed below.
 >  Tsung-Yi Lin, Priya Goyal, Ross Girshick, Kaiming He, Piotr Dollár. 2018. Focal Loss for Dense Object Detection. [1](https://arxiv.org/abs/1708.02002)
 
 > Mingxing Tan, Quoc V. Le. 2020. EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks.[2](https://arxiv.org/abs/1905.11946)
