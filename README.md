@@ -29,7 +29,7 @@ In the current repository, this architecture has changed a bit to be able to com
 
 
 ## Requirements
-This project is developed on Pytorch framework, so make sure you have installed the latest version of torch on your pc. It can run either on cuda or cpu.
+This project is developed on Pytorch framework, so make sure you have installed the latest version of torch on your PC. It can run either on cuda or cpu.
 <br><br>
 
 
@@ -38,9 +38,9 @@ This repository contains the following files and directories:
 
 
 `./data`
-- `data.charlotte_dataset`: A merely example of how to make a dataset class for your custom dataset.
-- `data.dataset`: This class inherents from torch.utils.data and your custom dataset should be used in this class at last. This class let you use num_workers > 0 and multiprocessing in torch.dataloader later which many projects don't support.
-- `data.play_card_dataset`: This is compatible with the dataset that I have provided its download link in the reference section. Every statistics in this project is based on performance of the model on this dataset.
+- `data.charlotte_dataset`: A mere example of how to make a dataset class for your custom dataset.
+- `data.dataset`: This class inherits from torch.utils.data and your custom dataset should be used in this class at last. This class lets you use num_workers > 0 and multiprocessing in torch.dataloader later which many projects don't support.
+- `data.play_card_dataset`: This is compatible with the dataset that I have provided its download link in the reference section. Every statistic in this project is based on the performance of the model on this dataset.
 - `data.voc2007_dataset`: This module lets you use voc datasets [2007 - 2012]. 
   
 ```
@@ -64,9 +64,9 @@ This repository contains the following files and directories:
 
 ```
 `./utils`
-- `utils.config`: It is presumeablly one of the most important files in this repository. It gets user preferences and feed them to the model. You can change every property in this file as you wish: num_workers, batch_size, epochs etc  
-- `utils.gpu_check`: This module is just to check your gpu's temperature, and trys to keep the temperature of your gpu in the safe zone.
-- `utils.visualisation`: This module helps you to visualize the model's outputs.
+- `utils.config`: It is presumably one of the most important files in this repository. It gets user preferences and feeds them to the model. You can change every property in this file as you wish: num_workers, batch_size, epochs, etc  
+- `utils.gpu_check`: This module is just to check your GPU's temperature and tries to keep the temperature of your GPU in the safe zone.
+- `utils. visualization`: This module helps you to visualize the model's outputs.
   
 ```
 - utils/
@@ -75,13 +75,13 @@ This repository contains the following files and directories:
     - visualisation.py
 
 ```
-`example.py`: This python script is a simple example of how you can use this model. In this file you will be shown how to train your model with some dummy images and bounding boxes.
+`example.py`: This Python script is a simple example of how you can use this model. In this file, you will be shown how to train your model with some dummy images and bounding boxes.
 
-`main.py`: This file handles users' inputs from consule. Corresponding to users' preferences, it decide to lunch `trainer.py` or `monitior.py`. 
+`main.py`: This file handles users' inputs from console. Corresponding to users' preferences, it decides to launch `trainer.py` or `monitior.py`. 
 
 
 ### How to run the project:
-As mentioned before, you can edit the config.py file located in the utils directory, or you can sent your prefrences through consule[terminal / CMD]. 
+As mentioned before, you can edit the config.py file located in the utils directory, or you can send your preferences through consule[terminal / CMD]. 
 ```
 python main.py --help
 Usage: main.py [options]
@@ -93,11 +93,11 @@ Options:
 
   -d AVAILABE_DEVICE, --device=AVAILABE_DEVICE
                         Choose the device you want to start training
-                        on.['cuda','cpu']
+                        on.['cuda','CPU]
 
   -g GPU_UNDER_CONTROL, --gpu=GPU_UNDER_CONTROL
                         True if you don't want to put a lot of pressure on
-                        your gpu card. It will keep your GPU's temperature in
+                        your GPU card. It will keep your GPU's temperature in
                         the safe zone.
 
   -m BACKBONE_MODEL_NAME, --model=BACKBONE_MODEL_NAME
@@ -105,23 +105,23 @@ Options:
                         efficientnet-b[0-7] -> efficientnet-b4
 
   -l DIR_TO_PRETRAINED_MODEL, --load=DIR_TO_PRETRAINED_MODEL
-                        The directory to a pretrained model checkpoint.
+                        The directory to a pre-trained model checkpoint.
 
   -w NUM_WORKERS, --workers=NUM_WORKERS
-                        The directory to a pretrained model checkpoint.
+                        The directory to a pre-trained model checkpoint.
 
   -t TRAIN, --train=TRAIN
                         If you want to start training your model based on your
-                        dataset, set this arg True. Otherwise, it just monitor
-                        the performance of your pretrained model.
+                        dataset, set this arg True. Otherwise, it just monitors
+                        the performance of your pre-trained model.
 ```
 
 
 
 ## Performance
-The most important part of this article undoubtedly is this section. Fortunately, I have kept a record of every single change on the mAP table as each epoch ended. I dare say that Efficient-Retinanet works significantly better and more accurate compared to the original Retinanet. To keep my expensive GPU card secure, I decided to alternate every batch with a delay of one second during the training process to make sure that my GPU's temperature is in the safe zone.
+The most important part of this article undoubtedly is this section. Fortunately, I have kept a record of every single change on the mAP table as each epoch ended. I dare say that Efficient-Retinanet works significantly better and more accurately compared to the original Retinanet. To keep my expensive GPU card secure, I decided to alternate every batch with a delay of one second during the training process to make sure that my GPU's temperature was in the safe zone.
 
-my system configuration is as bellow:
+my system configuration is as follows:
 
 |#|device|model|
 |-----|-----|----|
@@ -133,7 +133,7 @@ my system configuration is as bellow:
 |6|Power|Green Eco 600A|
 
 
-The results that I acheived based on `Play card dataset` are as follows:
+The results that I achieved based on `Play card dataset` are as follows:
 
 |#|Backbone|Epoch speed|Inference Speed|Number of parameters|Total size of parameters|mAP|mAP(50)|mAP(75)|
 |----|------|-------|---------|-------|---------|----|-------|----| 
@@ -147,12 +147,12 @@ The results that I acheived based on `Play card dataset` are as follows:
 
 ## References and Resources:
 
-This project is built thanks to the valueable information that I have found through the references that I have listed below.
+This project is built thanks to the valuable information that I have found through the references that I have listed below.
 >  Tsung-Yi Lin, Priya Goyal, Ross Girshick, Kaiming He, Piotr Dollár. 2018. Focal Loss for Dense Object Detection. [1](https://arxiv.org/abs/1708.02002)
 
 > Mingxing Tan, Quoc V. Le. 2020. EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks.[2](https://arxiv.org/abs/1905.11946)
 
-> Play Cards Dataset [link google drive]()
+> Play Cards Dataset [link Google Drive]()
 
 > Rretrained models [resnet50, efficientnet-b0, efficientnet-b4] [link google drive]()
 
