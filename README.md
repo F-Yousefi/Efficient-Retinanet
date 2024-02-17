@@ -137,7 +137,7 @@ The results that I acheived based on `Play card dataset` are as follows:
 
 |#|Backbone|Epoch speed|Inference Speed|Number of parameters|Total size of parameters|mAP|mAP(50)|mAP(75)|
 |----|------|-------|---------|-------|---------|----|-------|----| 
-|1|Resnet50|1.8 it/s|3.4it/s|32.3M|129 MB|20.1|29.1|22.5| 
+|1|Resnet50 (Original)|1.8 it/s|3.4it/s|32.3M|129 MB|20.1|29.1|22.5| 
 |2|Efficientnet-b0|***2.22it/s***|***4 it/s***|14M|56 MB|41.2|62.6|48.3| 
 |1|Efficientnet-b4|1.8it/s|2.8 it/s|27M|111 MB|***62.5***|***85.8***|***72.8***| 
 
