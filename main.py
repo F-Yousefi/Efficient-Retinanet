@@ -29,8 +29,7 @@ def main():
         "-g",
         "--gpu",
         dest="GPU_under_control",
-        help="True if you don't want to put a lot of pressure on your gpu card. \
-            It will keep your GPU's temperature in the safe zone.",
+        help="True if you don't want to put a lot of pressure on your gpu card. It will keep your GPU's temperature in the safe zone.",
         default=config.gpu_under_control,
     )
 
@@ -38,8 +37,7 @@ def main():
         "-m",
         "--model",
         dest="backbone_model_name",
-        help="The possible backbone models are as follows:\n \
-            efficientnet-b[0-7] -> efficientnet-b4 ",
+        help="The possible backbone models are as follows: efficientnet-b[0-7] -> efficientnet-b4 ",
         default=config.backbone_model_name,
     )
 
@@ -63,10 +61,8 @@ def main():
         "-t",
         "--train",
         dest="train",
-        help="If you want to start training your model based on your dataset, \
-            \n set this arg True. Otherwise, it just monitor the performance \
-            \n of your pretrained model.",
-        default=False,
+        help="If you want to start training your model based on your dataset, set this arg True. Otherwise, it just monitor the performance of your pretrained model.",
+        default=True,
     )
 
     (options, args) = parser.parse_args()
