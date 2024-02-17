@@ -145,17 +145,16 @@ The results that I acheived based on `Play card dataset` are as follows:
 
 
 
-## References:
+## References and Resources:
 
-The following list contains links to every resource that helped me implement this project.
+This project is built thanks to the valueable information that I have found through the references that i have listed below.
+>  Tsung-Yi Lin, Priya Goyal, Ross Girshick, Kaiming He, Piotr Dollár. 2018. Focal Loss for Dense Object Detection. [1](https://arxiv.org/abs/1708.02002)
 
-1.  Kaggle dataset published by [UCI MACHINE LEARNING](https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data/data)
-2.  The project which is developed by [BUDDHINI W](https://www.kaggle.com/code/buddhiniw/breast-cancer-prediction)
-3.  Maths-ML developed by [Farzad Yousefi ](https://github.com/F-Yousefi/Maths-ML)
-4.  House Price Prediction developed by [Farzad Yousefi ](https://github.com/F-Yousefi/House_Price_Prediction)
-5.  Machine Learning course published by [Coursera ](https://www.coursera.org/specializations/machine-learning-introduction)
-6.  Play Cards Dataset [link google drive]()
-7.  pretrained models [resnet50, efficientnet-b0, efficientnet-b4] [link google drive]()
+> Mingxing Tan, Quoc V. Le. 2020. EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks.[2](https://arxiv.org/abs/1905.11946)
+
+> Play Cards Dataset [link google drive]()
+
+> Rretrained models [resnet50, efficientnet-b0, efficientnet-b4] [link google drive]()
 
 
 <a href="https://www.nobelprize.org/prizes/peace/2023/mohammadi/facts/"> <img src="./images/banner.PNG" alt="banner.PNG" width="100%" ></a>
