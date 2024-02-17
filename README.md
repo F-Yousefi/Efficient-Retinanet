@@ -23,7 +23,7 @@ The original Retinanet is composed of an FPN with 3 main layers as you can see i
 
 In the current repository, this architecture has changed a bit to be able to combine with Efficientnet. In Efficientnet, seven layers are available for feature extraction. I used the six last layers of it for feature extraction in the architecture of Efficient Retinanet. In total, eight layers correspond to each scale in the following list [64, 128, 128, 256, 256, 256, 512, 512]. Seemingly, it might look a bit strange, but in practice, it works fine. The reason why I chose these scales is related to the output ratios of each layer of Efficientnet. 
 
-<center> <img src="./images/retinanet.JPG" alt="retinanet.JPG" width="700" > </center>
+<center> <img src="./images/retinanet.jpg" alt="retinanet.JPG" width="700" > </center>
 <br><br>
 
 
